@@ -1,16 +1,59 @@
-import Hero from "@/components/hero";
-import ConnectSupabaseSteps from "@/components/tutorial/connect-supabase-steps";
-import SignUpUserSteps from "@/components/tutorial/sign-up-user-steps";
-import { hasEnvVars } from "@/utils/supabase/check-env-vars";
+"use client";
 
-export default async function Home() {
+import { useEffect, useState } from "react";
+import { createClient } from "@supabase/supabase-js";
+import { useRouter } from "next/navigation";
+import Header from "@/components/Header";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+);
+
+export default function Home() {
+  const router = useRouter();
+  const [isUser, setIsUser] = useState(false);
+
+  useEffect(() => {
+    const checkUserAndSaveProfile = async () => {
+      try {
+        const { data: authData, error } = await supabase.auth.getUser();
+        console.log("Auth data:", authData);
+
+        if (!authData.user) {
+          router.push("/login");
+          return;
+        }
+        
+        const userEmail = authData.user.email;
+          
+        const { data: existingProfile} = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("email", userEmail)
+          .maybeSingle();
+
+        if (!existingProfile) {
+          const { data, error: insertError } = await supabase
+            .from("profiles")
+            .insert({
+              email: userEmail,
+            })
+        }
+        setIsUser(true);
+      } catch (error) {
+        console.log(error)
+      }
+    };
+
+    checkUserAndSaveProfile();
+  }, [router]);
+
+  if (!isUser) return null;
+
   return (
     <>
-      <Hero />
-      <main className="flex-1 flex flex-col gap-6 px-4">
-        <h2 className="font-medium text-xl mb-4">Next steps</h2>
-        {hasEnvVars ? <SignUpUserSteps /> : <ConnectSupabaseSteps />}
-      </main>
+      <Header />
     </>
   );
 }
