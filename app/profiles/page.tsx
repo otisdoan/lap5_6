@@ -14,7 +14,7 @@ const supabase = createClient(
 function Profiles() {
     const router = useRouter();
     const dateFormat = 'DD/MM/YYYY';
-    const [profile, setProfile] = useState(null);
+    const [profile, setProfile] = useState<any>(null);
     const [form] = Form.useForm();
 
     const handleUpdate = () => {

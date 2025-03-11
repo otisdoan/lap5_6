@@ -13,7 +13,7 @@ const supabase = createClient(
 function UpdateProfiles() {
     const dateFormat = 'DD/MM/YYYY';
     const router = useRouter();
-    const [profile, setProfile] = useState(null);
+    const [profile, setProfile] = useState<any>(null);
     const [messageApi, contextHolder] = message.useMessage();
     const [form] = Form.useForm();
 
