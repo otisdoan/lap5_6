@@ -1,8 +1,9 @@
 "use client"
-import { Button, Form, Input, Modal } from "antd"
+import { Button, Form, Input, message, Modal } from "antd"
 import Link from "next/link"
 import { createClient } from '@supabase/supabase-js'
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
 
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL || "",
@@ -10,29 +11,25 @@ const supabase = createClient(
 );
 
 function FormLogin() {
-    const [isOpenModal, setIsOpenModal] = useState(false);
-    const showModal = () => {
-        setIsOpenModal(true);
-    }
-    const handleCancel = () => {
-        setIsOpenModal(false);
-    }
-
+    const router = useRouter();
+    const [messageApi, contextHolder] = message.useMessage();
     const onFinish = async (values: any) => {
-        const { data, error } = await supabase.auth.signInWithOtp({
-            email: values.email,
-        })
+        const { data, error } = await supabase.auth.signInWithPassword(values)
+        console.log(error);
         console.log(data);
+        if (!error) {
+            router.push('/')
+        } else {
+            messageApi.open({
+                type: 'error',
+                content: 'Email or Password sai!',
+                duration: 3
+            });
+        }
     }
-    const handleOk = () => {
-        setIsOpenModal(false);
-    }
-
     return (
         <>
-            <Modal open={isOpenModal} onCancel={handleCancel} onOk={handleOk}>
-                <span className="">Vui lòng xác nhận tài khoản ở email của bạn!</span>
-            </Modal>
+            {contextHolder}
             <div className="">
                 <Form
                     labelCol={{
@@ -60,8 +57,20 @@ function FormLogin() {
                     >
                         <Input placeholder="Email" />
                     </Form.Item>
+                    <Form.Item
+                        label='Password'
+                        name={'password'}
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Email is required!'
+                            },
+                        ]}
+                    >
+                        <Input.Password placeholder="Password" />
+                    </Form.Item>
                     <Form.Item>
-                        <Button type="primary" htmlType="submit" className="w-full" danger onClick={showModal}>Login</Button>
+                        <Button type="primary" htmlType="submit" className="w-full" danger>Login</Button>
                     </Form.Item>
                     <Form.Item>
                         <div className="text-center">

@@ -4,7 +4,8 @@ import { Button, DatePicker, Form, Input, message, Select } from "antd";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
-
+import dayjs from 'dayjs';
+import Footer from "@/components/Footer";
 
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL || "",
@@ -16,6 +17,7 @@ function UpdateProfiles() {
     const [profile, setProfile] = useState<any>(null);
     const [messageApi, contextHolder] = message.useMessage();
     const [form] = Form.useForm();
+    const [emailUser, setEmailUser] = useState<any>();
 
     const onFinish = async (values: any) => {
         const { error } = await supabase
@@ -53,10 +55,22 @@ function UpdateProfiles() {
         router.push('/profiles');
     }
     useEffect(() => {
+        const getEmail = async () => {
+            const { data: authData, error } = await supabase.auth.getUser();
+            console.log(authData);
+            if (authData) {
+                setEmailUser(authData?.user?.email);
+            }
+        }
+        getEmail();
+    }, [])
+
+    useEffect(() => {
         const fetchProfiles = async () => {
             const { data, error } = await supabase
                 .from("profiles")
                 .select("*")
+                .eq("email", emailUser)
                 .limit(1);
 
             if (!error && data.length > 0) {
@@ -64,11 +78,17 @@ function UpdateProfiles() {
             }
         };
         fetchProfiles();
-    }, []);
+    }, [emailUser]);
+
     useEffect(() => {
         if (profile) {
             form.setFieldsValue({
-                email: profile.email || ''
+                email: profile.email || "",
+                name: profile.name || "",
+                gender: profile.gender || "Female",
+                hobby: profile.hobby || "",
+                born: profile.born ? dayjs(profile.born) : null,
+                address: profile.address || ""
             })
         }
     }, [profile, form])
@@ -165,6 +185,7 @@ function UpdateProfiles() {
                     </div>
                 </Form>
             </div>
+            <Footer />
         </>
     )
 }

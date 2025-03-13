@@ -5,6 +5,7 @@ import dayjs from 'dayjs';
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
+import Footer from "@/components/Footer";
 
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL || "",
@@ -16,7 +17,7 @@ function Profiles() {
     const dateFormat = 'DD/MM/YYYY';
     const [profile, setProfile] = useState<any>(null);
     const [form] = Form.useForm();
-
+    const [emailUser, setEmailUser] = useState<any>();
     const handleUpdate = () => {
         router.push('/update-profiles');
     };
@@ -27,10 +28,22 @@ function Profiles() {
     ];
 
     useEffect(() => {
+        const getEmail = async () => {
+            const { data: authData, error } = await supabase.auth.getUser();
+            console.log(authData);
+            if (authData) {
+                setEmailUser(authData?.user?.email);
+            }
+        }
+        getEmail();
+    }, [])
+
+    useEffect(() => {
         const fetchProfiles = async () => {
             const { data, error } = await supabase
                 .from("profiles")
                 .select("*")
+                .eq("email", emailUser)
                 .limit(1);
 
             if (!error && data.length > 0) {
@@ -38,7 +51,7 @@ function Profiles() {
             }
         };
         fetchProfiles();
-    }, []);
+    }, [emailUser]);
 
     useEffect(() => {
         if (profile) {
@@ -51,7 +64,7 @@ function Profiles() {
                 address: profile.address || ""
             });
         }
-    }, [profile, form]);
+    }, [profile]);
 
     return (
         <>
@@ -69,14 +82,14 @@ function Profiles() {
                     </Form.Item>
                     <div className="flex gap-x-4">
                         <Form.Item label="Gender" name="gender" className="w-1/2">
-                            <Select options={items} disabled/>
+                            <Select options={items} disabled />
                         </Form.Item>
                         <Form.Item label="Hobby" name="hobby" className="w-1/2">
                             <Input disabled />
                         </Form.Item>
                     </div>
                     <Form.Item label="Born" name="born">
-                        <DatePicker format={dateFormat} disabled/>
+                        <DatePicker format={dateFormat} disabled />
                     </Form.Item>
                     <Form.Item label="Address" name="address">
                         <Input disabled />
@@ -91,6 +104,7 @@ function Profiles() {
                     </div>
                 </Form>
             </div>
+            <Footer />
         </>
     );
 }

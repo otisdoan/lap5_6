@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
+import Todos from "@/components/Todos";
+import Footer from "@/components/Footer";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || "",
@@ -54,6 +56,8 @@ export default function Home() {
   return (
     <>
       <Header />
+      <Todos />
+      <Footer />
     </>
   );
 }

@@ -18,11 +18,17 @@ function FormRegister() {
             messageApi.open({
                 type: 'success',
                 content: 'Register successfully',
-                duration: 1000
+                duration: 1.5
             });
             setTimeout(() => {
                 router.push('/login')
             }, 1000)
+        } else {
+            messageApi.open({
+                type: 'error',
+                content: 'Email is not valid!',
+                duration: 3
+            });
         }
     }
     return (
@@ -66,7 +72,7 @@ function FormRegister() {
                         ]}
 
                     >
-                        <Input type="password" placeholder="Password" />
+                        <Input.Password placeholder="Password" />
                     </Form.Item>
                     <Form.Item>
                         <Button type="primary" htmlType="submit" className="w-full" danger>Register</Button>
